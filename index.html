@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧩 메이크 앤 브레이크 어린이 가이드 & 연습장</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Jua & Noto Sans KR) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tone.js for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        jua: ['Jua', 'sans-serif'],
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        gameYellow: '#FFD166',
+                        gameRed: '#EF476F',
+                        gameBlue: '#118AB2',
+                        gameGreen: '#06D6A0',
+                        gameOrange: '#F78C6B',
+                        gameWood: '#D4A373'
+                    },
+                    animation: {
+                        bounceShort: 'bounceShort 0.5s ease-in-out',
+                        shake: 'shake 0.4s ease-in-out',
+                    },
+                    keyframes: {
+                        bounceShort: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '20%, 60%': { transform: 'translateX(-6px)' },
+                            '40%, 80%': { transform: 'translateX(6px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8F9FA;
+            background-image: radial-gradient(#E2E8F0 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+        .font-jua {
+            font-family: 'Jua', sans-serif;
+        }
+        /* Custom block styles for 3D look */
+        .block-3d {
+            box-shadow: inset 0 3px 0 rgba(255,255,255,0.4), inset 0 -4px 0 rgba(0,0,0,0.25), 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .block-card-preview {
+            border: 4px solid #334155;
+            background: #FFFFFF;
+            box-shadow: 0 8px 0 #1E293B;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="bg-amber-400 border-b-4 border-amber-500 sticky top-0 z-50 shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showTab('intro')">
+                <div class="bg-red-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold block-3d transform -rotate-6">
+                    🧱
+                </div>
+                <div>
+                    <h1 class="font-jua text-2xl md:text-3xl text-slate-900 tracking-wide leading-none">메이크 앤 브레이크</h1>
+                    <p class="text-xs font-bold text-amber-900">어린이 완벽 탐험 가이드 🚀</p>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <nav class="flex flex-wrap gap-1 md:gap-2 text-sm md:text-base font-jua">
+                <button onclick="showTab('intro')" id="tab-intro" class="nav-btn px-3 py-1.5 rounded-xl bg-white/40 hover:bg-white text-slate-800 transition active-tab">
+                    📖 소개
+                </button>
+                <button onclick="showTab('rules')" id="tab-rules" class="nav-btn px-3 py-1.5 rounded-xl bg-white/40 hover:bg-white text-slate-800 transition">
+                    📜 규칙 배우기
+                </button>
+                <button onclick="showTab('helper')" id="tab-helper" class="nav-btn px-3 py-1.5 rounded-xl bg-white/40 hover:bg-white text-slate-800 transition">
+                    ⏱️ 타이머 & 주사위
+                </button>
+                <button onclick="showTab('game')" id="tab-game" class="nav-btn px-3 py-1.5 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition shadow">
+                    🎮 블록 맞추기 연습
+                </button>
+                <button onclick="showTab('quiz')" id="tab-quiz" class="nav-btn px-3 py-1.5 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 transition shadow">
+                    🎯 퀴즈
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- SECTION 1: GAME INTRO -->
+        <section id="sec-intro" class="tab-content space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-block bg-slate-900/30 text-amber-100 font-bold px-3 py-1 rounded-full text-xs md:text-sm mb-3">
+                        ⚡ 순발력 & 집중력 최고 보드게임!
+                    </span>
+                    <h2 class="font-jua text-3xl md:text-5xl mb-3 leading-tight drop-shadow">
+                        시간 안에 빠르게 쌓고!<br>와르르 무너뜨려라! 🏗️💥
+                    </h2>
+                    <p class="text-white/90 text-sm md:text-base font-medium leading-relaxed mb-6">
+                        카드에 그려진 모양을 보고, 알록달록 블록을 누구보다 정확하고 똑같이 완성하는 게임이에요!
+                        타이머가 <strong>째깍째깍</strong> 지나가기 전에 얼마나 많은 과제를 성공할 수 있을까요?
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="showTab('rules')" class="bg-slate-900 hover:bg-slate-800 text-amber-300 font-jua px-5 py-3 rounded-2xl text-lg shadow-lg hover:scale-105 transition">
+                            🚀 규칙 알아보러 가기
+                        </button>
+                        <button onclick="showTab('game')" class="bg-white hover:bg-amber-50 text-slate-900 font-jua px-5 py-3 rounded-2xl text-lg shadow-lg hover:scale-105 transition">
+                            🎮 온라인 블록 연습하기
+                        </button>
+                    </div>
+                </div>
+                <div class="hidden md:block absolute right-4 bottom-2 text-9xl opacity-20 select-none">
+                    🧱
+                </div>
+            </div>
+
+            <!-- Components Showcase -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                <h3 class="font-jua text-2xl text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-box-open text-amber-500"></i> 게임에는 뭐가 들어있을까요?
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Comp 1 -->
+                    <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200 text-center hover:scale-105 transition">
+                        <div class="text-4xl mb-2">🧱</div>
+                        <h4 class="font-jua text-lg text-amber-900">나무 블록 10개</h4>
+                        <p class="text-xs text-slate-600 mt-1">빨강, 파랑, 초록, 노랑, 주황, 자연목 색깔의 똑똑한 블록들!</p>
+                    </div>
+                    <!-- Comp 2 -->
+                    <div class="bg-blue-50 rounded-2xl p-4 border border-blue-200 text-center hover:scale-105 transition">
+                        <div class="text-4xl mb-2">🃏</div>
+                        <h4 class="font-jua text-lg text-blue-900">도전 카드 80장</h4>
+                        <p class="text-xs text-slate-600 mt-1">1점(쉬움), 2점(보통), 3점(어려움)의 다양한 입체 도면 카드!</p>
+                    </div>
+                    <!-- Comp 3 -->
+                    <div class="bg-red-50 rounded-2xl p-4 border border-red-200 text-center hover:scale-105 transition">
+                        <div class="text-4xl mb-2">⏱️</div>
+                        <h4 class="font-jua text-lg text-red-900">째깍째깍 타이머</h4>
+                        <p class="text-xs text-slate-600 mt-1">시간이 줄어드는 동안 손을 바쁘게 움직여야 해요!</p>
+                    </div>
+                    <!-- Comp 4 -->
+                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-200 text-center hover:scale-105 transition">
+                        <div class="text-4xl mb-2">🎲</div>
+                        <h4 class="font-jua text-lg text-emerald-900">숫자 주사위</h4>
+                        <p class="text-xs text-slate-600 mt-1">1, 2, 3이 적힌 주사위! 나온 숫자만큼 시간을 받아요.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: RULES GUIDE -->
+        <section id="sec-rules" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                <div class="text-center max-w-xl mx-auto mb-8">
+                    <span class="bg-amber-100 text-amber-800 font-bold text-xs px-3 py-1 rounded-full">쉬운 4단계 안내</span>
+                    <h2 class="font-jua text-3xl text-slate-800 mt-2">게임은 어떻게 진행할까요?</h2>
+                    <p class="text-slate-500 text-sm mt-1">친구들과 순서를 정하고 차례대로 아래 순서로 도전해요!</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Step 1 -->
+                    <div class="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 items-start">
+                        <div class="bg-amber-400 text-slate-900 font-jua text-2xl w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow">
+                            1
+                        </div>
+                        <div>
+                            <h4 class="font-jua text-xl text-slate-800">주사위 굴려 시간 얻기 🎲</h4>
+                            <p class="text-sm text-slate-600 mt-1">
+                                자기 차례가 되면 <strong>주사위(1, 2, 3)</strong>를 굴려요.
+                                주사위에 나온 숫자만큼 타이머를 태엽으로 감아 시간을 설정합니다! (숫자가 클수록 시간이 길어요!)
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 items-start">
+                        <div class="bg-red-400 text-white font-jua text-2xl w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow">
+                            2
+                        </div>
+                        <div>
+                            <h4 class="font-jua text-xl text-slate-800">타이머 스타트 & 카드 뒤집기 ⏱️</h4>
+                            <p class="text-sm text-slate-600 mt-1">
+                                타이머를 누름과 동시에 카드 더미 맨 위에서 **첫 번째 도전 카드**를 공개해요!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 items-start">
+                        <div class="bg-blue-500 text-white font-jua text-2xl w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow">
+                            3
+                        </div>
+                        <div>
+                            <h4 class="font-jua text-xl text-slate-800">카드 그림과 똑같이 쌓기 🧱</h4>
+                            <p class="text-sm text-slate-600 mt-1">
+                                카드에 나온 색깔과 모양 위치를 보고 그대로 블록을 세워요.
+                                다 쌓으면 **"완성!"**을 외치고 다음 카드를 넘겨요. 시간이 남는 동안 계속 도전할 수 있어요!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 items-start">
+                        <div class="bg-emerald-500 text-white font-jua text-2xl w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow">
+                            4
+                        </div>
+                        <div>
+                            <h4 class="font-jua text-xl text-slate-800">점수 카드 획득하기 🏆</h4>
+                            <p class="text-sm text-slate-600 mt-1">
+                                타이머 <strong>"땡!"</strong> 소리가 나면 멈춰요!
+                                시간 내에 성공한 카드 오른쪽에 적힌 점수(1~3점)를 모두 더해 자기 점수로 가져갑니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Reading Tip Box -->
+                <div class="mt-8 bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-5">
+                    <h4 class="font-jua text-xl text-amber-900 flex items-center gap-2 mb-2">
+                        💡 카드 읽는 핵심 법칙! (꼭 기억하세요!)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-700 mt-3">
+                        <div class="bg-white p-3 rounded-xl border border-amber-200">
+                            <span class="font-bold text-red-500">🎨 색깔이 있는 카드:</span><br>
+                            그림에 표시된 **정확한 색깔**의 블록을 써야 해요!
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-amber-200">
+                            <span class="font-bold text-slate-600">⬜ 회색/회색조 카드:</span><br>
+                            색깔 상관없이 **모양 형태만 똑같이** 쌓으면 성공!
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-amber-200">
+                            <span class="font-bold text-blue-600">🔢 숫자 표기 (1, 2, 3):</span><br>
+                            카드 모퉁이에 적힌 숫자는 **성공했을 때 얻는 점수**예요!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: TIMER & DICE HELPER -->
+        <section id="sec-helper" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 text-center">
+                <span class="bg-red-100 text-red-600 font-bold text-xs px-3 py-1 rounded-full">실제 게임할 때 폰/패드로 켜두세요!</span>
+                <h2 class="font-jua text-3xl text-slate-800 mt-2">실전 게임 타이머 & 주사위 도우미 ⏱️🎲</h2>
+                <p class="text-slate-500 text-sm mt-1">보드게임 타이머가 없거나 더 흥미진진하게 즐기고 싶을 때 사용해 보세요!</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Digital Dice -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col items-center justify-between">
+                        <div>
+                            <h3 class="font-jua text-2xl text-slate-800">🎲 주사위 굴리기</h3>
+                            <p class="text-xs text-slate-500 mt-1">1, 2, 3 중 랜덤으로 타이머 시간이 결정돼요!</p>
+                        </div>
+
+                        <div id="dice-display" class="my-6 w-28 h-28 bg-amber-400 text-slate-900 rounded-3xl border-4 border-amber-500 flex items-center justify-center font-jua text-6xl shadow-lg block-3d transition-transform">
+                            ?
+                        </div>
+
+                        <button onclick="rollDice()" id="roll-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-jua text-xl py-3 rounded-xl shadow transition active:scale-95">
+                            🎲 주사위 굴리기!
+                        </button>
+                    </div>
+
+                    <!-- Digital Timer -->
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col items-center justify-between">
+                        <div>
+                            <h3 class="font-jua text-2xl text-slate-800">⏱️ 게임 타이머</h3>
+                            <p class="text-xs text-slate-500 mt-1">주사위 결과에 맞춰 시간을 맞추고 시작하세요!</p>
+                        </div>
+
+                        <!-- Timer Display -->
+                        <div class="my-4">
+                            <div id="timer-display" class="font-jua text-6xl text-slate-800 tracking-wider">
+                                00:30
+                            </div>
+                            <div class="flex justify-center gap-2 mt-2">
+                                <button onclick="setTimerSec(20)" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-bold text-slate-700">1 (20초)</button>
+                                <button onclick="setTimerSec(35)" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-bold text-slate-700">2 (35초)</button>
+                                <button onclick="setTimerSec(50)" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-bold text-slate-700">3 (50초)</button>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 w-full">
+                            <button onclick="toggleTimer()" id="timer-start-btn" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-xl py-3 rounded-xl shadow transition active:scale-95">
+                                ▶️ 타이머 시작!
+                            </button>
+                            <button onclick="resetTimer()" class="px-4 bg-slate-300 hover:bg-slate-400 text-slate-700 font-jua rounded-xl transition">
+                                🔄 리셋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: VIRTUAL BLOCK GAME -->
+        <section id="sec-game" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                    <div>
+                        <span class="bg-emerald-100 text-emerald-800 font-bold text-xs px-3 py-1 rounded-full">온라인 가상 체험</span>
+                        <h2 class="font-jua text-3xl text-slate-800 mt-1">🎮 실전 블록 맞추기 연습!</h2>
+                    </div>
+                    <div class="flex items-center gap-4 bg-slate-100 px-4 py-2 rounded-2xl">
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 font-bold">획득 점수</div>
+                            <div id="game-score" class="font-jua text-2xl text-emerald-600">0점</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 font-bold">남은 시간</div>
+                            <div id="mini-timer" class="font-jua text-2xl text-red-500">25초</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Game Area -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                    
+                    <!-- Challenge Card Target (4 cols) -->
+                    <div class="md:col-span-5 bg-amber-50 p-5 rounded-2xl border-2 border-amber-300 flex flex-col items-center">
+                        <div class="w-full flex justify-between items-center mb-2">
+                            <span class="font-jua text-amber-900 text-lg">📋 미션 도면 카드</span>
+                            <span id="card-points-badge" class="bg-red-500 text-white font-jua text-sm px-2.5 py-0.5 rounded-full block-3d">
+                                1점
+                            </span>
+                        </div>
+
+                        <!-- Card Render Box -->
+                        <div class="w-full h-56 bg-white rounded-xl border-4 border-slate-700 p-4 flex flex-col justify-end items-center shadow-inner relative overflow-hidden" id="card-preview-area">
+                            <!-- Stacking Target Displayed Here via JS -->
+                        </div>
+                        <p class="text-xs text-amber-800 mt-2 font-medium text-center">
+                            도면 카드의 색상 순서대로 똑같이 쌓아 올려야 해요!
+                        </p>
+                    </div>
+
+                    <!-- Building Zone & Palette (7 cols) -->
+                    <div class="md:col-span-7 space-y-4">
+                        
+                        <!-- Build Canvas / Stack Zone -->
+                        <div class="bg-slate-100 rounded-2xl border-2 border-slate-300 p-4 flex flex-col items-center justify-end min-h-[220px] relative">
+                            <span class="absolute top-2 left-3 text-xs font-bold text-slate-400">🏗️ 내가 쌓는 구역</span>
+                            
+                            <!-- User's Stack Display -->
+                            <div id="user-stack-zone" class="flex flex-col-reverse items-center gap-1.5 w-full max-w-[180px] min-h-[140px] justify-start py-2">
+                                <!-- User placed blocks render here -->
+                            </div>
+
+                            <button onclick="clearUserStack()" class="absolute top-2 right-2 text-xs bg-slate-200 hover:bg-slate-300 text-slate-600 px-2.5 py-1 rounded-lg font-bold">
+                                🗑️ 다시 쌓기
+                            </button>
+                        </div>
+
+                        <!-- Block Palette -->
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200">
+                            <p class="text-xs font-bold text-slate-500 mb-2">👇 아래 블록을 클릭해서 차례대로 올려놓으세요!</p>
+                            <div class="flex flex-wrap justify-center gap-2" id="block-palette">
+                                <!-- Colors available -->
+                                <button onclick="addBlock('red')" class="w-12 h-10 bg-red-500 rounded-lg block-3d border border-red-600 hover:scale-110 active:scale-95 transition"></button>
+                                <button onclick="addBlock('blue')" class="w-12 h-10 bg-blue-500 rounded-lg block-3d border border-blue-600 hover:scale-110 active:scale-95 transition"></button>
+                                <button onclick="addBlock('yellow')" class="w-12 h-10 bg-amber-400 rounded-lg block-3d border border-amber-500 hover:scale-110 active:scale-95 transition"></button>
+                                <button onclick="addBlock('green')" class="w-12 h-10 bg-emerald-500 rounded-lg block-3d border border-emerald-600 hover:scale-110 active:scale-95 transition"></button>
+                                <button onclick="addBlock('orange')" class="w-12 h-10 bg-orange-500 rounded-lg block-3d border border-orange-600 hover:scale-110 active:scale-95 transition"></button>
+                                <button onclick="addBlock('wood')" class="w-12 h-10 bg-amber-700 rounded-lg block-3d border border-amber-800 hover:scale-110 active:scale-95 transition"></button>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex gap-3">
+                            <button onclick="startMiniGame()" id="minigame-start-btn" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-lg py-3 rounded-2xl shadow-lg transition">
+                                🚀 연습 시작하기
+                            </button>
+                            <button onclick="checkUserStack()" id="minigame-check-btn" disabled class="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 text-slate-900 font-jua text-lg py-3 rounded-2xl shadow-lg transition">
+                                ✅ 완성! 검사하기
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: RULE QUIZ -->
+        <section id="sec-quiz" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 max-w-2xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="bg-indigo-100 text-indigo-800 font-bold text-xs px-3 py-1 rounded-full">규칙 마스터 검정</span>
+                    <h2 class="font-jua text-3xl text-slate-800 mt-2">🎯 메이크 앤 브레이크 퀴즈!</h2>
+                    <p class="text-slate-500 text-sm mt-1">퀴즈를 풀며 규칙을 제대로 이해했는지 확인해보세요!</p>
+                </div>
+
+                <div id="quiz-container" class="space-y-6">
+                    <!-- Quiz cards injected dynamically -->
+                </div>
+
+                <div id="quiz-result" class="hidden text-center p-6 bg-indigo-50 border-2 border-indigo-200 rounded-2xl">
+                    <h3 class="font-jua text-3xl text-indigo-900 mb-2">🎉 축하합니다!</h3>
+                    <p id="quiz-score-text" class="text-lg text-indigo-700 font-bold mb-4"></p>
+                    <button onclick="initQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-jua px-6 py-2.5 rounded-xl shadow transition">
+                        🔄 다시 풀기
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-6 border-t border-slate-700 text-center text-xs">
+        <div class="max-w-5xl mx-auto px-4 space-y-2">
+            <p class="font-jua text-sm text-slate-300">🧩 메이크 앤 브레이크 어린이 가이드 웹앱</p>
+            <p>보드게임 'Make 'N' Break'는 Ravensburger의 등록 상표입니다. 본 앱은 초등학생 학습용 가이드입니다.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Sound synth setup using Tone.js
+        let synth;
+        function playBeep(freq = 440, duration = '8n') {
+            try {
+                if (!synth) {
+                    synth = new Tone.Synth().toDestination();
+                }
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                synth.triggerAttackRelease(freq, duration);
+            } catch (e) {
+                console.log("Audio not triggered yet", e);
+            }
+        }
+
+        function playSuccessSound() {
+            try {
+                const now = Tone.now();
+                const poly = new Tone.Synth().toDestination();
+                poly.triggerAttackRelease("C5", "8n", now);
+                poly.triggerAttackRelease("E5", "8n", now + 0.1);
+                poly.triggerAttackRelease("G5", "8n", now + 0.2);
+                poly.triggerAttackRelease("C6", "4n", now + 0.3);
+            } catch(e){}
+        }
+
+        // Tab Navigation Logic
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('bg-white', 'shadow', 'font-bold'));
+            
+            const targetSec = document.getElementById(`sec-${tabId}`);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) activeBtn.classList.add('bg-white', 'shadow', 'font-bold');
+
+            playBeep(520, '16n');
+        }
+
+        // Dice & Timer Helper Logic
+        let timerInterval = null;
+        let timerSeconds = 30;
+        let isTimerRunning = false;
+
+        function rollDice() {
+            playBeep(300, '16n');
+            const diceEl = document.getElementById('dice-display');
+            diceEl.classList.add('animate-shake');
+
+            let rollCount = 0;
+            const rollInterval = setInterval(() => {
+                const randomVal = Math.floor(Math.random() * 3) + 1;
+                diceEl.innerText = randomVal;
+                rollCount++;
+
+                if (rollCount > 10) {
+                    clearInterval(rollInterval);
+                    diceEl.classList.remove('animate-shake');
+                    const finalVal = Math.floor(Math.random() * 3) + 1;
+                    diceEl.innerText = finalVal;
+                    
+                    // Auto suggest time based on dice
+                    if (finalVal === 1) setTimerSec(20);
+                    if (finalVal === 2) setTimerSec(35);
+                    if (finalVal === 3) setTimerSec(50);
+
+                    playBeep(600, '8n');
+                }
+            }, 60);
+        }
+
+        function setTimerSec(sec) {
+            if (isTimerRunning) resetTimer();
+            timerSeconds = sec;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-start-btn');
+            if (isTimerRunning) {
+                // Pause
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btn.innerText = "▶️ 타이머 재개";
+                btn.className = btn.className.replace('bg-red-500 hover:bg-red-600', 'bg-emerald-500 hover:bg-emerald-600');
+            } else {
+                // Start
+                if (timerSeconds <= 0) timerSeconds = 30;
+                isTimerRunning = true;
+                btn.innerText = "⏸️ 일시정지";
+                btn.className = btn.className.replace('bg-emerald-500 hover:bg-emerald-600', 'bg-red-500 hover:bg-red-600');
+
+                timerInterval = setInterval(() => {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    if (timerSeconds <= 5 && timerSeconds > 0) {
+                        playBeep(880, '16n');
+                    }
+                    if (timerSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        btn.innerText = "▶️ 타이머 시작!";
+                        btn.className = btn.className.replace('bg-red-500 hover:bg-red-600', 'bg-emerald-500 hover:bg-emerald-600');
+                        playBeep(220, '2n');
+                        alert("⏰ 시간이 다 되었습니다! 타임 아웃!");
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = 30;
+            updateTimerDisplay();
+            const btn = document.getElementById('timer-start-btn');
+            btn.innerText = "▶️ 타이머 시작!";
+            btn.className = "flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-xl py-3 rounded-xl shadow transition active:scale-95";
+        }
+
+        // Virtual Mini Game Logic
+        const BLOCK_COLORS = {
+            red: { bg: 'bg-red-500', name: '빨강' },
+            blue: { bg: 'bg-blue-500', name: '파랑' },
+            yellow: { bg: 'bg-amber-400', name: '노랑' },
+            green: { bg: 'bg-emerald-500', name: '초록' },
+            orange: { bg: 'bg-orange-500', name: '주황' },
+            wood: { bg: 'bg-amber-700', name: '자연목' }
+        };
+
+        const PRESET_CARDS = [
+            { points: 1, stack: ['red', 'blue', 'yellow'] },
+            { points: 1, stack: ['green', 'wood', 'orange'] },
+            { points: 2, stack: ['yellow', 'red', 'blue', 'green'] },
+            { points: 2, stack: ['wood', 'orange', 'red', 'wood'] },
+            { points: 3, stack: ['blue', 'yellow', 'green', 'orange', 'red'] }
+        ];
+
+        let currentCardIndex = 0;
+        let currentTargetStack = [];
+        let userCurrentStack = [];
+        let gameScore = 0;
+        let miniTimerVal = 25;
+        let miniTimerInterval = null;
+        let isMiniGameActive = false;
+
+        function renderChallengeCard() {
+            const card = PRESET_CARDS[currentCardIndex];
+            currentTargetStack = card.stack;
+            document.getElementById('card-points-badge').innerText = `${card.points}점 과제`;
+
+            const previewArea = document.getElementById('card-preview-area');
+            previewArea.innerHTML = '';
+
+            // Render stack bottom-to-top visually
+            const stackContainer = document.createElement('div');
+            stackContainer.className = 'flex flex-col-reverse gap-1 items-center w-28';
+
+            card.stack.forEach(colorKey => {
+                const blockEl = document.createElement('div');
+                blockEl.className = `w-full h-8 ${BLOCK_COLORS[colorKey].bg} rounded-md block-3d border border-slate-700`;
+                stackContainer.appendChild(blockEl);
+            });
+
+            previewArea.appendChild(stackContainer);
+        }
+
+        function addBlock(colorKey) {
+            if (!isMiniGameActive) {
+                alert("먼저 '🚀 연습 시작하기' 버튼을 눌러주세요!");
+                return;
+            }
+            if (userCurrentStack.length >= 6) return;
+
+            userCurrentStack.push(colorKey);
+            playBeep(400 + userCurrentStack.length * 80, '16n');
+            renderUserStack();
+        }
+
+        function clearUserStack() {
+            userCurrentStack = [];
+            renderUserStack();
+            playBeep(300, '16n');
+        }
+
+        function renderUserStack() {
+            const userZone = document.getElementById('user-stack-zone');
+            userZone.innerHTML = '';
+
+            userCurrentStack.forEach((colorKey) => {
+                const blockEl = document.createElement('div');
+                blockEl.className = `w-full h-8 ${BLOCK_COLORS[colorKey].bg} rounded-md block-3d border border-slate-800 animate-bounceShort`;
+                userZone.appendChild(blockEl);
+            });
+        }
+
+        function startMiniGame() {
+            isMiniGameActive = true;
+            gameScore = 0;
+            miniTimerVal = 30;
+            currentCardIndex = 0;
+            userCurrentStack = [];
+
+            document.getElementById('game-score').innerText = '0점';
+            document.getElementById('minigame-start-btn').classList.add('hidden');
+            document.getElementById('minigame-check-btn').removeAttribute('disabled');
+
+            renderChallengeCard();
+            renderUserStack();
+
+            clearInterval(miniTimerInterval);
+            miniTimerInterval = setInterval(() => {
+                miniTimerVal--;
+                document.getElementById('mini-timer').innerText = `${miniTimerVal}초`;
+
+                if (miniTimerVal <= 0) {
+                    clearInterval(miniTimerInterval);
+                    isMiniGameActive = false;
+                    document.getElementById('minigame-check-btn').setAttribute('disabled', 'true');
+                    document.getElementById('minigame-start-btn').classList.remove('hidden');
+                    document.getElementById('minigame-start-btn').innerText = "🔄 다시 도전하기";
+                    
+                    playBeep(200, '2n');
+                    alert(`🏁 연습 종료! 최종 점수: ${gameScore}점! 참 잘했어요!`);
+                }
+            }, 1000);
+        }
+
+        function checkUserStack() {
+            if (!isMiniGameActive) return;
+
+            // Check match
+            const isMatch = userCurrentStack.length === currentTargetStack.length &&
+                userCurrentStack.every((val, idx) => val === currentTargetStack[idx]);
+
+            if (isMatch) {
+                playSuccessSound();
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+
+                const points = PRESET_CARDS[currentCardIndex].points;
+                gameScore += points;
+                document.getElementById('game-score').innerText = `${gameScore}점`;
+
+                // Next card
+                currentCardIndex = (currentCardIndex + 1) % PRESET_CARDS.length;
+                userCurrentStack = [];
+                renderUserStack();
+                renderChallengeCard();
+            } else {
+                playBeep(180, '8n');
+                const userZone = document.getElementById('user-stack-zone');
+                userZone.classList.add('animate-shake');
+                setTimeout(() => userZone.classList.remove('animate-shake'), 400);
+                alert("아쉬워요! 도면 카드의 색상 순서와 일치하는지 다시 확인해보세요!");
+            }
+        }
+
+        // Quiz System Data
+        const QUIZ_DATA = [
+            {
+                q: "1. 메이크 앤 브레이크 게임의 기본 목적은 무엇일까요?",
+                options: [
+                    "블록을 가장 높이 쌓아 안 무너지게 버티기",
+                    "제한 시간 안에 도전 카드 모습과 똑같이 블록 완성하기",
+                    "주사위를 굴려 말을 결승선까지 보내기"
+                ],
+                answer: 1
+            },
+            {
+                q: "2. 도전 카드 모퉁이에 적힌 '숫자 (1, 2, 3)'의 의미는 무엇일까요?",
+                options: [
+                    "성공했을 때 얻는 점수",
+                    "사용한 블록의 개수",
+                    "주사위를 굴려야 하는 횟수"
+                ],
+                answer: 0
+            },
+            {
+                q: "3. 카드가 알록달록 색깔이 없이 '회색조'로만 그려져 있다면 어떻게 해야 할까요?",
+                options: [
+                    "아무 색깔 블록이나 사용해서 모양만 똑같이 쌓으면 된다",
+                    "무조건 빨간색 블록만 사용해야 한다",
+                    "회색 카드는 무시하고 다음 카드로 넘긴다"
+                ],
+                answer: 0
+            }
+        ];
+
+        let quizAnswers = [];
+
+        function initQuiz() {
+            quizAnswers = new Array(QUIZ_DATA.length).fill(null);
+            const container = document.getElementById('quiz-container');
+            const resultBox = document.getElementById('quiz-result');
+            resultBox.classList.add('hidden');
+            container.innerHTML = '';
+
+            QUIZ_DATA.forEach((item, qIdx) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 p-5 rounded-2xl border border-slate-200';
+
+                let optionsHTML = '';
+                item.options.forEach((opt, optIdx) => {
+                    optionsHTML += `
+                        <button onclick="selectQuizAnswer(${qIdx}, ${optIdx})" id="quiz-btn-${qIdx}-${optIdx}" 
+                            class="quiz-opt-btn w-full text-left p-3 my-1 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-slate-700 text-sm font-medium transition flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 font-jua flex items-center justify-center text-xs">${optIdx + 1}</span>
+                            ${opt}
+                        </button>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <h4 class="font-jua text-lg text-slate-800 mb-3">${item.q}</h4>
+                    <div class="space-y-1">${optionsHTML}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Submit Button
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'w-full bg-indigo-600 hover:bg-indigo-700 text-white font-jua text-lg py-3 rounded-2xl shadow transition mt-4';
+            submitBtn.innerText = '✅ 정답 확인하기!';
+            submitBtn.onclick = checkQuizResults;
+            container.appendChild(submitBtn);
+        }
+
+        function selectQuizAnswer(qIdx, optIdx) {
+            quizAnswers[qIdx] = optIdx;
+            playBeep(450, '16n');
+
+            // Visual active selection
+            for (let i = 0; i < QUIZ_DATA[qIdx].options.length; i++) {
+                const btn = document.getElementById(`quiz-btn-${qIdx}-${i}`);
+                if (i === optIdx) {
+                    btn.className = "quiz-opt-btn w-full text-left p-3 my-1 rounded-xl border-2 border-indigo-500 bg-indigo-100 text-indigo-900 font-bold text-sm transition flex items-center gap-2 shadow-sm";
+                } else {
+                    btn.className = "quiz-opt-btn w-full text-left p-3 my-1 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-slate-700 text-sm font-medium transition flex items-center gap-2";
+                }
+            }
+        }
+
+        function checkQuizResults() {
+            if (quizAnswers.includes(null)) {
+                alert("아직 풀지 않은 문제가 있어요! 모든 문제의 답을 선택해주세요.");
+                return;
+            }
+
+            let correctCount = 0;
+            QUIZ_DATA.forEach((item, idx) => {
+                if (quizAnswers[idx] === item.answer) {
+                    correctCount++;
+                }
+            });
+
+            const resultBox = document.getElementById('quiz-result');
+            const scoreText = document.getElementById('quiz-score-text');
+            resultBox.classList.remove('hidden');
+
+            if (correctCount === QUIZ_DATA.length) {
+                scoreText.innerText = `만점입니다! (${correctCount}/${QUIZ_DATA.length} 정답)\n당신은 진정한 메이크 앤 브레이크 마스터! 🏆`;
+                playSuccessSound();
+                confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
+            } else {
+                scoreText.innerText = `${correctCount}개 맞혔어요! (${correctCount}/${QUIZ_DATA.length})\n규칙 가이드를 한 번 더 읽고 재도전해보세요! 💪`;
+                playBeep(300, '8n');
+            }
+
+            window.scrollTo({ top: resultBox.offsetTop - 100, behavior: 'smooth' });
+        }
+
+        // Initialize default view
+        window.onload = function() {
+            showTab('intro');
+            renderChallengeCard();
+            initQuiz();
+        };
+    </script>
+</body>
+</html>
